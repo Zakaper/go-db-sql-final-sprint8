@@ -13,11 +13,11 @@ func NewParcelStore(db *sql.DB) ParcelStore {
 }
 
 func (s ParcelStore) Add(p Parcel) (int, error) {
-	res, err := s.db.Exec("INSERT INTO parsel (number, address, client, createdAt) VALUES (:number, :address, :client, :createdAt)",
+	res, err := s.db.Exec("INSERT INTO parcel (number, address, client, created_at) VALUES (:number, :address, :client, :created_at)",
 		sql.Named("number", p.Number),
 		sql.Named("address", p.Address),
 		sql.Named("client", p.Client),
-		sql.Named("createdAt", p.CreatedAt))
+		sql.Named("created_at", p.CreatedAt))
 	if err != nil {
 		return 0, err
 	}
@@ -77,8 +77,6 @@ func (s ParcelStore) SetAddress(number int, address string) error {
 }
 
 func (s ParcelStore) Delete(number int) error {
-	// реализуйте удаление строки из таблицы parcel
-	// удалять строку можно только если значение статуса registered
 	_, err := s.db.Exec("DELETE FROM parcel WHERE numbeer = :number",
 		sql.Named("number", number),
 		sql.Named("status", ParcelStatusRegistered))

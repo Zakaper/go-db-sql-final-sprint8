@@ -32,55 +32,45 @@ func getTestParcel() Parcel {
 // TestAddGetDelete проверяет добавление, получение и удаление посылки
 func TestAddGetDelete(t *testing.T) {
 	// prepare
-	db, err := sql.Open("sqlite", "trcker.db")
-	if err != nil {
-		require.NoError(t, err)
-	}
+	db, err := sql.Open("sqlite", "tracker.db")
+	require.NoError(t, err)
 	defer db.Close()
+
 	store := NewParcelStore(db)
 	parcel := getTestParcel()
 
 	number, err := store.Add(parcel)
-	if err != nil {
-		require.NoError(t, err)
-	}
+	require.NoError(t, err)
 	assert.NotEmpty(t, number)
 
 	newParcel, err := store.Get(number)
-	if err != nil {
-		require.NoError(t, err)
-	}
+	require.NoError(t, err)
 	assert.Equal(t, parcel.Number, newParcel.Number)
 	assert.Equal(t, parcel.Address, newParcel.Address)
 	assert.Equal(t, parcel.Client, newParcel.Client)
 	assert.Equal(t, parcel.CreatedAt, newParcel.CreatedAt)
 
 	err = store.Delete(number)
-	if err != nil {
-		require.NoError(t, err)
-	}
+	require.NoError(t, err)
+
 	_, err = store.Get(number)
-	if err != nil {
-		require.Equal(t, sql.ErrNoRows, err)
-	}
+	require.Equal(t, sql.ErrNoRows, err)
+
 }
 
 // TestSetAddress проверяет обновление адреса
 func TestSetAddress(t *testing.T) {
 	// prepare
 	db, err := sql.Open("sqlite", "tracker.db")
-	if err != nil {
-		require.NoError(t, err)
-	}
+	require.NoError(t, err)
+
 	defer db.Close()
 
 	store := NewParcelStore(db)
 	parcel := getTestParcel()
 
 	number, err := store.Add(parcel)
-	if err != nil {
-		require.NoError(t, err)
-	}
+	require.NoError(t, err)
 	assert.Empty(t, number)
 
 	newAddress := "new test address"
@@ -88,9 +78,8 @@ func TestSetAddress(t *testing.T) {
 	require.NoError(t, err)
 
 	uppdateParcel, err := store.Get(number)
-	if err != nil {
-		require.NoError(t, err)
-	}
+	require.NoError(t, err)
+
 	assert.Equal(t, newAddress, uppdateParcel.Address)
 }
 
@@ -98,27 +87,22 @@ func TestSetAddress(t *testing.T) {
 func TestSetStatus(t *testing.T) {
 	// prepare
 	db, err := sql.Open("sqlite", "tracker.db")
-	if err != nil {
-		require.NoError(t, err)
-	}
+	require.NoError(t, err)
 	defer db.Close()
 
 	store := NewParcelStore(db)
 	parcel := getTestParcel()
 
 	number, err := store.Add(parcel)
-	if err != nil {
-		require.NoError(t, err)
-	}
+	require.NoError(t, err)
+
 	assert.Empty(t, number)
 
 	store.SetStatus(number, ParcelStatusSent)
 	require.NoError(t, err)
 
 	uppdateParcel, err := store.Get(number)
-	if err != nil {
-		require.NoError(t, err)
-	}
+	require.NoError(t, err)
 	assert.Equal(t, ParcelStatusSent, uppdateParcel.Status)
 }
 
@@ -126,9 +110,7 @@ func TestSetStatus(t *testing.T) {
 func TestGetByClient(t *testing.T) {
 	// prepare
 	db, err := sql.Open("sqlite", "tracker.db")
-	if err != nil {
-		require.NoError(t, err)
-	}
+	require.NoError(t, err)
 	defer db.Close()
 	store := NewParcelStore(db)
 	parcel := getTestParcel()
