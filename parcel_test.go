@@ -45,10 +45,10 @@ func TestAddGetDelete(t *testing.T) {
 
 	newParcel, err := store.Get(number)
 	require.NoError(t, err)
-	assert.Equal(t, parcel.Number, newParcel.Number)
 	assert.Equal(t, parcel.Address, newParcel.Address)
 	assert.Equal(t, parcel.Client, newParcel.Client)
 	assert.Equal(t, parcel.CreatedAt, newParcel.CreatedAt)
+	assert.Equal(t, parcel.Status, newParcel.Status)
 
 	err = store.Delete(number)
 	require.NoError(t, err)
@@ -71,7 +71,7 @@ func TestSetAddress(t *testing.T) {
 
 	number, err := store.Add(parcel)
 	require.NoError(t, err)
-	assert.Empty(t, number)
+	assert.NotEmpty(t, number)
 
 	newAddress := "new test address"
 	store.SetAddress(number, newAddress)
@@ -96,14 +96,14 @@ func TestSetStatus(t *testing.T) {
 	number, err := store.Add(parcel)
 	require.NoError(t, err)
 
-	assert.Empty(t, number)
+	assert.NotEmpty(t, number)
 
-	store.SetStatus(number, ParcelStatusSent)
+	store.SetStatus(number, ParcelStatusDelivered)
 	require.NoError(t, err)
 
 	uppdateParcel, err := store.Get(number)
 	require.NoError(t, err)
-	assert.Equal(t, ParcelStatusSent, uppdateParcel.Status)
+	assert.Equal(t, ParcelStatusDelivered, uppdateParcel.Status)
 }
 
 // TestGetByClient проверяет получение посылок по идентификатору клиента
@@ -111,9 +111,10 @@ func TestGetByClient(t *testing.T) {
 	// prepare
 	db, err := sql.Open("sqlite", "tracker.db")
 	require.NoError(t, err)
+
 	defer db.Close()
+
 	store := NewParcelStore(db)
-	parcel := getTestParcel()
 
 	parcels := []Parcel{
 		getTestParcel(),
@@ -130,10 +131,10 @@ func TestGetByClient(t *testing.T) {
 
 	// add
 	for i := 0; i < len(parcels); i++ {
-		id, err := store.Add(parcel)
-		if err != nil {
-			require.NoError(t, err)
-		}
+		id, err := store.Add(parcels[i])
+		require.NoError(t, err)
+		assert.NotEmpty(t, id)
+
 		// обновляем идентификатор добавленной у посылки
 		parcels[i].Number = id
 
@@ -143,9 +144,8 @@ func TestGetByClient(t *testing.T) {
 
 	// get by client
 	storedParcels, err := store.GetByClient(client)
-	if err != nil {
-		require.NoError(t, err)
-	}
+	require.NoError(t, err)
+
 	assert.Len(t, parcels, len(storedParcels))
 
 	// check
