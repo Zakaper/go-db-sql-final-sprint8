@@ -36,26 +36,27 @@ func TestAddGetDelete(t *testing.T) {
 	require.NoError(t, err)
 	defer db.Close()
 
+	_, err = db.Exec("DELETE FROM parcel")
+	require.NoError(t, err)
+
 	store := NewParcelStore(db)
 	parcel := getTestParcel()
 
-	number, err := store.Add(parcel)
+	num, err := store.Add(parcel)
 	require.NoError(t, err)
-	assert.NotEmpty(t, number)
+	assert.NotEmpty(t, num)
 
-	newParcel, err := store.Get(number)
+	newParcel, err := store.Get(num)
 	require.NoError(t, err)
-	assert.Equal(t, parcel.Address, newParcel.Address)
-	assert.Equal(t, parcel.Client, newParcel.Client)
-	assert.Equal(t, parcel.CreatedAt, newParcel.CreatedAt)
-	assert.Equal(t, parcel.Status, newParcel.Status)
+	parcel.Number = newParcel.Number
+	assert.Equal(t, parcel, newParcel)
+	assert.Equal(t, parcel, newParcel)
 
-	err = store.Delete(number)
+	err = store.Delete(num)
 	require.NoError(t, err)
 
-	_, err = store.Get(number)
-	require.Equal(t, sql.ErrNoRows, err)
-
+	_, err = store.Get(num)
+	require.ErrorIs(t, err, sql.ErrNoRows)
 }
 
 // TestSetAddress проверяет обновление адреса
@@ -150,7 +151,7 @@ func TestGetByClient(t *testing.T) {
 
 	// check
 	for _, parcel := range storedParcels {
-		assert.NotEmpty(t, parcelMap[parcel.Number])
+		assert.NotEmpty(t, parcel.Number, parcelMap[parcel.Number])
 		assert.Equal(t, parcel, parcelMap[parcel.Number])
 		// в parcelMap лежат добавленные посылки, ключ - идентификатор посылки, значение - сама посылка
 		// убедитесь, что все посылки из storedParcels есть в parcelMap
